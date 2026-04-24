@@ -1,0 +1,36 @@
+Ahmed Hassan
+ahmed.hassan@gmail.com | linkedin.com/in/ahmedhassan | github.com/ahmedhassan | +20-100-000-0000
+
+Summary
+Computer Science student with hands-on experience in backend development and machine learning.
+Seeking a software engineering internship to grow my skills in a fast-paced environment.
+
+Education
+B.Sc. Computer Science, Cairo University
+Expected Graduation: June 2025  |  GPA: 3.7 / 4.0
+
+Experience
+Backend Developer Intern, StartupX — Cairo  (June 2023 – September 2023)
+- Developed and maintained REST APIs using Django and PostgreSQL
+- Implemented JWT authentication, covering all user-facing endpoints
+- Led weekly code review sessions for three junior developers
+- Reduced average API response time by 25% through query optimisation
+
+Projects
+Resume Analyzer  (2024)
+- Built an NLP pipeline using spaCy to detect CV sections and extract skills
+- Deployed as a FastAPI microservice running in Docker
+
+Student Grade Tracker  (2023)
+- Django web app allowing students to track coursework grades and GPA
+- Used Chart.js for visual grade trends
+
+Skills
+Python, Django, FastAPI, PostgreSQL, Docker, Git, Machine Learning, spaCy, REST APIs, Linux
+
+Certifications
+AWS Cloud Practitioner — Amazon Web Services (2023)
+Machine Learning Specialization — Coursera / DeepLearning.AI (2023)
+
+Languages
+Arabic (Native), English (Professional working proficiency)

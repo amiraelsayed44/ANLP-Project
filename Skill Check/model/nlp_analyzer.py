@@ -179,17 +179,13 @@ def analyze_cv(cv_text: str, use_ai: bool = False) -> dict:
     skills      = extract_skills(cv_text)
     contact     = extract_contact(cv_text)
     
-    # 1. الحصول على النصائح المبرمجة مسبقاً (باللغة الإنجليزية)
     basic_suggestions = generate_suggestions(cv_text, sections, contact, skills)
     
-    # 2. تحديد أي النصائح سيتم إرسالها
     if use_ai:
         llm_suggestions = generate_intelligent_suggestions(cv_text)
-        # إذا نجح Gemini في إرجاع نصائح، استخدمها هي فقط لمنع اختلاط اللغات
         if len(llm_suggestions) > 0:
             all_suggestions = llm_suggestions
         else:
-            # في حال توقف Gemini أو انتهاء الباقة، استخدم النصائح العادية
             all_suggestions = basic_suggestions
     else:
         all_suggestions = basic_suggestions
@@ -206,7 +202,7 @@ def analyze_cv(cv_text: str, use_ai: bool = False) -> dict:
         "skills":           skills,
         "contact_info":     contact,
         "named_entities":   entities[:20],
-        "suggestions":      all_suggestions, # الآن تحتوي على لغة واحدة متناسقة
+        "suggestions":      all_suggestions, 
         "word_count":       len(cv_text.split()),
         "character_count":  len(cv_text),
     }

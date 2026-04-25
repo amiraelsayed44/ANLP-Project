@@ -234,7 +234,7 @@ def test_edge_cases():
     check("Arabic text CV runs without crash", r is not None)
 
     # Very long CV (stress test)
-    r = analyze_cv(GOOD_CV )
+    r = analyze_cv(GOOD_CV*10) 
     check("10x repeated CV runs without crash", r is not None)
 
 

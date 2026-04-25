@@ -9,13 +9,19 @@ import re
 import spacy
 
 from utils.gemini_client import GeminiClient
+from utils.constants import (
+    SECTION_HEADERS,
+    CRITICAL_SECTIONS,
+    MISSING_SECTION_MESSAGES_EN,
+    MISSING_SECTION_MESSAGES_AR,
+)
 
 
 # Model loading
 
 def load_model():
     try:
-        nlp = spacy.load("en_core_web_sm")
+        nlp = spacy.load("xx_ent_wiki_sm")
         return nlp
     except OSError:
         raise RuntimeError(
@@ -25,21 +31,11 @@ def load_model():
 
 nlp = load_model()
 
+def is_arabic(text: str) -> bool:
+    """Check if the text contains Arabic characters."""
+    return bool(re.search(r'[\u0600-\u06FF]', text))
+
 # Section detection
-
-SECTION_HEADERS = {
-    "contact":        r"(contact|phone|linkedin|github|address)",
-    "summary":        r"(summary|profile|objective|about\s*me|personal\s*statement)",
-    "education":      r"(education|academic|university|degree|school|college)",
-    "experience":     r"(experience|employment|work\s*history|internship|career)",
-    "skills":         r"(skills|technologies|tools|competencies)",
-    "projects":       r"(projects|portfolio|work\s*samples)",
-    "certifications": r"(certif|license|credential|course|training)",
-    "awards":         r"(award|honor|achievement|scholarship)",
-    "languages":      r"(language|spoken|fluency)",
-    "references":     r"(reference|recommendation)",
-}
-
 
 def extract_sections(cv_text: str) -> dict:
     """
@@ -81,7 +77,7 @@ def extract_skills(cv_text: str) -> list[str]:
 
     # Rule-based pass: grab the comma/bullet list after the skills header
     match = re.search(
-        r"(skills|technologies|tools)[:\-\s]+(.*?)(\n\n|\Z)",
+        r"(skills|technologies|tools|المهارات|تقنيات|أدوات)[:\-\s]+(.*?)(\n\n|\Z)", # تمت إضافة الكلمات العربية هنا
         cv_text,
         re.IGNORECASE | re.DOTALL,
     )
@@ -124,26 +120,7 @@ def extract_contact(cv_text: str) -> dict:
     return info
 
 
-
 # Suggestion engine
-
-CRITICAL_SECTIONS = ["summary", "education", "experience", "skills"]
-
-MISSING_SECTION_MESSAGES = {
-    "summary":        "Add a Profile Summary (2-3 sentences about yourself and your goals).",
-    "education":      "Add an Education section with your degree, university, and graduation year.",
-    "experience":     "Add a Work Experience or Internship section.",
-    "skills":         "Add a Skills section listing your technical and soft skills.",
-    "projects":       "Add a Projects section — even academic or personal projects count.",
-    "certifications": "Add any Certifications or online courses you have completed.",
-    "contact":        "Make sure your contact info (email, LinkedIn) is clearly listed.",
-}
-
-ACTION_VERBS = [
-    "developed", "built", "led", "managed", "designed",
-    "implemented", "created", "improved", "analyzed", "achieved",
-]
-
 
 def generate_suggestions(
     cv_text: str,
@@ -154,43 +131,32 @@ def generate_suggestions(
     
     tips: list[str] = []
     found = set(sections.keys())
+    
+    # اختيار لغة النصائح بناءً على محتوى السيرة الذاتية
+    is_ar = is_arabic(cv_text)
+    messages = MISSING_SECTION_MESSAGES_AR if is_ar else MISSING_SECTION_MESSAGES_EN
 
     # Missing critical sections
     for sec in CRITICAL_SECTIONS:
         if sec not in found:
-            tips.append(MISSING_SECTION_MESSAGES[sec])
+            tips.append(messages[sec])
 
     # Missing nice-to-have sections
     for sec in ("projects", "certifications"):
         if sec not in found:
-            tips.append(MISSING_SECTION_MESSAGES[sec])
+            tips.append(messages[sec])
 
     # Contact completeness
     if "email" not in contact:
-        tips.append("No email address detected — make sure it is present.")
+        tips.append("لم يتم العثور على بريد إلكتروني." if is_ar else "No email address detected.")
     if "linkedin" not in contact:
-        tips.append("Adding a LinkedIn profile URL improves recruiter visibility.")
+        tips.append("إضافة رابط لينكد إن يزيد من فرصك." if is_ar else "Adding a LinkedIn profile URL improves recruiter visibility.")
 
-    # Length check
     if len(cv_text.split()) < 100:
-        tips.append("The CV looks very short. Expand each section with more detail.")
-
-    # Weak experience bullets
-    if "experience" in found:
-        exp_lower = sections["experience"].lower()
-        verb_hits = [v for v in ACTION_VERBS if v in exp_lower]
-        if len(verb_hits) < 2:
-            tips.append(
-                'Use strong action verbs in your Experience bullets '
-                '(e.g. "Developed", "Led", "Improved").'
-            )
-
-    # Skills section present but empty
-    if "skills" in found and not skills:
-        tips.append("Skills section found but appears empty — list specific tools and languages.")
+        tips.append("السيرة الذاتية قصيرة جداً، أضف المزيد من التفاصيل." if is_ar else "The CV looks very short. Expand each section.")
 
     if not tips:
-        tips.append("No major issues found. Tailor the CV for each application.")
+        tips.append("تبدو السيرة الذاتية ممتازة!" if is_ar else "No major issues found.")
 
     return tips
 
@@ -204,9 +170,8 @@ def generate_intelligent_suggestions(cv_text: str) -> list[str]:
         return []
 
 # Main entry point
-
 def analyze_cv(cv_text: str, use_ai: bool = False) -> dict:
-    
+   
     if not cv_text or not cv_text.strip():
         return {"error": "CV text is empty."}
 
@@ -214,11 +179,20 @@ def analyze_cv(cv_text: str, use_ai: bool = False) -> dict:
     skills      = extract_skills(cv_text)
     contact     = extract_contact(cv_text)
     
-    all_suggestions = generate_suggestions(cv_text, sections, contact, skills)
+    # 1. الحصول على النصائح المبرمجة مسبقاً (باللغة الإنجليزية)
+    basic_suggestions = generate_suggestions(cv_text, sections, contact, skills)
     
+    # 2. تحديد أي النصائح سيتم إرسالها
     if use_ai:
         llm_suggestions = generate_intelligent_suggestions(cv_text)
-        all_suggestions = all_suggestions + llm_suggestions
+        # إذا نجح Gemini في إرجاع نصائح، استخدمها هي فقط لمنع اختلاط اللغات
+        if len(llm_suggestions) > 0:
+            all_suggestions = llm_suggestions
+        else:
+            # في حال توقف Gemini أو انتهاء الباقة، استخدم النصائح العادية
+            all_suggestions = basic_suggestions
+    else:
+        all_suggestions = basic_suggestions
 
     doc = nlp(cv_text[:5000])
     entities = [
@@ -232,7 +206,7 @@ def analyze_cv(cv_text: str, use_ai: bool = False) -> dict:
         "skills":           skills,
         "contact_info":     contact,
         "named_entities":   entities[:20],
-        "suggestions":      all_suggestions, 
+        "suggestions":      all_suggestions, # الآن تحتوي على لغة واحدة متناسقة
         "word_count":       len(cv_text.split()),
         "character_count":  len(cv_text),
     }

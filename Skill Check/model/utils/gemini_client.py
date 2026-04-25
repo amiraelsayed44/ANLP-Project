@@ -14,7 +14,13 @@ class GeminiClient:
         self.client = genai.Client(api_key=api_key)
 
     def generate_suggestions(self, cv_text: str) -> list[str]:
-        prompt = f"Analyze the following CV and provide 3 specific, actionable suggestions for improvement. Do not include introductory text, just the bullet points:\n\n{cv_text}"
+        prompt = f"""
+        Analyze the following CV. First, detect if it is written in English or Arabic. 
+        Provide 3 specific, actionable suggestions for improvement IN THE SAME LANGUAGE as the CV. 
+        Do not include introductory text, just the bullet points:
+        
+        {cv_text}
+        """
         
         response = self.client.models.generate_content(
             model='gemini-3-flash-preview',

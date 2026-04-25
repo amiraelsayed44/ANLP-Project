@@ -8,6 +8,8 @@ Uses spaCy for named-entity recognition and rule-based section parsing.
 import re
 import spacy
 
+from utils.gemini_client import GeminiClient
+
 
 # Model loading
 
@@ -192,19 +194,31 @@ def generate_suggestions(
 
     return tips
 
+def generate_intelligent_suggestions(cv_text: str) -> list[str]:
+    """Use Gemini to generate suggestions based on the CV content."""
+    try:
+        client = GeminiClient.create_client()
+        return client.generate_suggestions(cv_text)
+    except Exception as e:
+        print(f"Warning: Could not fetch intelligent suggestions: {e}")
+        return []
 
 # Main entry point
 
-
-def analyze_cv(cv_text: str) -> dict:
-   
+def analyze_cv(cv_text: str, use_ai: bool = False) -> dict:
+    
     if not cv_text or not cv_text.strip():
         return {"error": "CV text is empty."}
 
     sections    = extract_sections(cv_text)
     skills      = extract_skills(cv_text)
     contact     = extract_contact(cv_text)
-    suggestions = generate_suggestions(cv_text, sections, contact, skills)
+    
+    all_suggestions = generate_suggestions(cv_text, sections, contact, skills)
+    
+    if use_ai:
+        llm_suggestions = generate_intelligent_suggestions(cv_text)
+        all_suggestions = all_suggestions + llm_suggestions
 
     doc = nlp(cv_text[:5000])
     entities = [
@@ -218,8 +232,7 @@ def analyze_cv(cv_text: str) -> dict:
         "skills":           skills,
         "contact_info":     contact,
         "named_entities":   entities[:20],
-        "suggestions":      suggestions,
+        "suggestions":      all_suggestions, 
         "word_count":       len(cv_text.split()),
         "character_count":  len(cv_text),
     }
-

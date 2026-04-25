@@ -35,7 +35,7 @@ def health():
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze(req: AnalyzeRequest):
    
-    result = analyze_cv(req.cv_text)
+    result = analyze_cv(req.cv_text, use_ai=True)
 
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])

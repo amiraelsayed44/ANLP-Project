@@ -223,26 +223,3 @@ def analyze_cv(cv_text: str) -> dict:
         "character_count":  len(cv_text),
     }
 
-
-# Quick smoke test
-
-if __name__ == "__main__":
-    import json
-
-    sample = """
-John Doe
-john.doe@email.com | linkedin.com/in/johndoe | +1-555-0100
-
-Skills
-Python, Java, SQL, Machine Learning, Git, Docker
-
-Education
-B.Sc. Computer Science — Cairo University, 2023
-
-Experience
-Software Intern — Tech Corp (2022-2023)
-Developed REST APIs using Flask. Improved query performance by 30%.
-    """
-
-    result = analyze_cv(sample)
-    print(json.dumps(result, indent=2, ensure_ascii=False))

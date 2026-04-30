@@ -1,0 +1,22 @@
+{
+  "total": 220,
+  "dropped": 15,
+  "valid": 205,
+  "raw_spans": 3426,
+  "clean_spans": 3310,
+  "overlaps_removed": 116,
+  "train_size": 186,
+  "test_size": 19,
+  "entity_distribution": {
+    "NAME": 209,
+    "LOCATION": 394,
+    "EMAIL_ADDRESS": 232,
+    "COMPANIES_WORKED_AT": 653,
+    "GRADUATION_YEAR": 249,
+    "SKILLS": 446,
+    "DESIGNATION": 492,
+    "DEGREE": 283,
+    "COLLEGE_NAME": 313,
+    "YEARS_OF_EXPERIENCE": 39
+  }
+}

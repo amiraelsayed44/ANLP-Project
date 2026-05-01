@@ -7,7 +7,7 @@ __pycache__/
 venv/
 env/
 
-# Data (Don't push heavy datasets to GitHub)
+# Data 
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep      # Add a blank .gitkeep file so the folder structure is pushed

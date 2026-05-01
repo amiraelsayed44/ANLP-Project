@@ -1,0 +1,8 @@
+Sara Khaled
+sara.khaled@example.com
+
+Education
+B.Sc. Information Technology, Alexandria University — 2024
+
+Skills
+Java, Spring Boot, MySQL, HTML, CSS, JavaScript

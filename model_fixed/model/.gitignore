@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+
+# Data (Don't push heavy datasets to GitHub)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep      # Add a blank .gitkeep file so the folder structure is pushed
+!data/processed/.gitkeep
+
+# Secrets
+.env
+
+# Jupyter
+.ipynb_checkpoints/
